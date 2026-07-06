@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}编辑商品{% endblock %}
+{% block content %}
+
+<!--顶部说明与当前商品预览-->
+<section class="form-shell wide-form">
+    <div class="form-intro">
+        <p class="eyebrow">Edit Product</p>
+        <h1>编辑商品</h1>
+        <p>修改商品名称、图片、价格、库存、产地和介绍后，前台展示会同步更新。</p>
+        
+        <!-- 【重点 1】：预览框。
+             在让卖家修改信息前，先展示当前的商品图片和名字，告诉他“你正在改这个商品”，防止改错对象 -->
+        <div class="preview-box">
+            <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+            <strong>{{ product.name }}</strong>
+        </div>
+    </div>
+    
+    <!--编辑表单与表单回填 -->
+    <!--带有文件上传功能的 POST 表单 -->
+    <form method="post" enctype="multipart/form-data" class="form-card">
+        
+        <!-- 1. 更换图片：文件输入框不能回填原图片，但上面的预览框已经展示了原图。
+             如果用户这里不选新文件，后端通常会保留原图 -->
+        <label>更换图片
+            <input type="file" name="image" accept="image/*">
+        </label>
+
+        <!-- 2. 商品名称：【表单回填核心】
+             value="{{ product.name }}" 的作用是把后端传来的商品原名，直接填在输入框里。
+             用户看到的就是填好的状态，修改时只需在原基础上增删即可 -->
+        <label>商品名称
+            <input type="text" name="name" value="{{ product.name }}" required>
+        </label>
+
+        <!-- 3. 商品种类下拉框：【下拉框回填核心】
+             遍历所有分类，如果当前分类的 ID 等于该商品原本的分类 ID (c.id == product.category_id)，
+             就在这个 <option> 标签里加上 selected 属性，让它默认被选中 -->
+        <label>商品种类
+            <select name="category_id" required>
+                {% for c in categories %}
+                <option value="{{ c.id }}" {% if c.id == product.category_id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <div class="two-col">
+            <!-- 4. 价格：同样是 value 回填原价 -->
+            <label>价格
+                <input type="number" step="0.01" min="0" name="price" value="{{ product.price }}" required>
+            </label>
+            <!-- 5. 库存：回填原库存数。注意这里 min="0" 改成了 0，允许库存为 0（卖光了） -->
+            <label>库存
+                <input type="number" min="0" name="stock" value="{{ product.stock }}">
+            </label>
+        </div>
+
+        <!-- 6. 产地：回填原产地。这里又用到了 or '' 语法：
+             如果数据库里有产地就显示产地，如果是空的，就显示空字符串（而不是显示“None”字样） -->
+        <label>产地
+            <input type="text" name="origin" value="{{ product.origin or '' }}">
+        </label>
+
+        <!-- 7. 商品介绍：【文本域回填核心】
+             注意 <textarea> 标签和 <input> 不一样！它没有 value 属性。
+             它的回填方式是把变量直接写在开闭标签之间：<textarea>原始描述</textarea> -->
+        <label>商品介绍
+            <textarea name="description" rows="5">{{ product.description or '' }}</textarea>
+        </label>
+
+        <div class="detail-actions">
+            <button class="btn primary big" type="submit">保存修改</button>
+            <!-- 取消/返回按钮，跳回卖家中心 -->
+            <a class="btn ghost big" href="{{ url_for('sell') }}">返回</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,108 @@
+<!-- 继承base.html，意味着这个页面自动拥有了顶部导航栏和底部页脚 -->
+{% extends 'base.html' %}
+
+<!-- 填充 base.html 中预留的 title 坑，把网页标题定为"商城首页" -->
+{% block title %}商城首页{% endblock %}
+
+<!-- 填充 base.html 中预留的 content 主体坑，下面的内容都会显示在网页中间 -->
+{% block content %}
+
+<!--顶部横幅与搜索框-->
+<section class="hero">
+    <div>
+        <p class="eyebrow">乡村好物 · 产地直供</p>
+        <h1>从田间到餐桌，精选新鲜好物</h1>
+        <p>严选水果、蔬菜、粮油、干货与地方特产，为日常家庭采购提供更省心的选择。</p>
+    </div>
+
+    <!-- 搜索表单。method="get" 表示搜索词会显示在网址参数里（如 ?keyword=苹果）。
+         action 指向 index 路由，提交后会刷新当前页面并带上搜索词 -->
+    <form class="search-box" method="get" action="{{ url_for('index') }}">
+
+        <!-- 输入框。value="{{ keyword or '' }}" 的作用是：如果你搜了东西，输入框里会保留你搜的词；
+            如果没搜，就显示空。placeholder 是没输入时的灰色提示文字 -->
+        <input type="text" name="keyword" value="{{ keyword or '' }}" placeholder="搜索苹果、鸡蛋、小米、柿饼……">
+        <button type="submit">搜索商品</button>
+    </form>
+</section>
+
+<!-- 整体三栏布局容器 -->
+<!-- 这是一个 CSS 布局容器，用来把页面分成 左边栏(分类) + 中间内容(商品) + 右边栏(热卖榜) -->
+<div class="shop-layout">
+    <aside class="sidebar left-sidebar">    <!--左侧边栏-->
+        <h2>商品分类</h2>
+        <!-- "全部商品"按钮。如果当前没有选中任何分类 (not active_category_id)，就加上 active 样式（通常是高亮显示） -->
+        <a class="category-link {% if not active_category_id %}active{% endif %}" href="{{ url_for('index') }}">全部商品</a>
+
+        <!-- 循环遍历后端传来的 categories (分类列表) -->
+        {% for c in categories %}
+        <!-- 如果当前选中的分类 ID 等于这个分类的 ID，加上 active 高亮样式。
+             点击会跳转到首页，并带上 category_id 参数 (如 /?category_id=1) -->
+        <a class="category-link {% if active_category_id == c.id %}active{% endif %}" href="{{ url_for('index', category_id=c.id) }}">{{ c.name }}</a>
+        {% endfor %}
+    </aside>
+
+    <section class="content-area">  <!--中间主区域：推荐商品与普通商品列表-->
+        <!-- 1. 推荐商品区 -->
+        {% if recommended_products %}   <!-- 如果后端传了推荐商品数据 -->
+        <div class="section-title">
+            <div>
+                <p class="eyebrow">Selected For You</p>
+                <h2>为你推荐</h2>
+            </div>
+            <span>根据近期浏览与选购偏好更新</span>
+        </div>
+        <div class="product-grid recommended-grid">
+            <!-- 循环遍历推荐商品列表 -->
+            {% for product in recommended_products %}
+                <!-- 这里很重要喵~，include 用来引入另一个小文件 _product_card.html。
+                     这样就不用在每个页面重复写商品卡片的 HTML 代码了 -->
+                {% include '_product_card.html' %}
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- 2. 普通商品列表区 -->
+        <div class="section-title shop-title">
+            <div>
+                <p class="eyebrow">Fresh Market</p>
+                <!-- page_title 是后端传来的标题，比如"全部商品"或"搜索结果" -->
+                <h2>{{ page_title }}</h2>
+            </div>
+            <!-- |length 是 Jinja2 的过滤器，用来计算列表里有几个商品，显示总数 -->
+            <span>共 {{ products|length }} 件商品</span>
+        </div>
+
+        {% if products %}   <!-- 如果有商品 -->
+        <div class="product-grid">
+            {% for product in products %}
+                {% include '_product_card.html' %}  <!-- 再次复用商品卡片组件 -->
+            {% endfor %}
+        </div>
+        {% else %}  <!-- 如果没商品（比如搜了一个不存在的词） -->
+        <div class="empty">暂时没有找到相关商品。</div>
+        {% endif %}
+    </section>
+
+    <aside class="sidebar right-sidebar">   <!--右侧边栏-->
+        <h2>当前热卖榜</h2>
+        <ol class="hot-list">   <!-- ol 是有序列表，自带 1. 2. 3. 序号 -->
+            <!-- 循环遍历热卖商品列表 hot_products -->
+            {% for p in hot_products %}
+            <li>
+                <!-- 点击跳转到商品详情页，传参 product_id -->
+                <a href="{{ url_for('product_detail', product_id=p.id) }}">
+                    <!-- loop.index 是 Jinja2 循环的专属变量，表示当前是第几次循环 (1, 2, 3...)，
+                         用在这里刚好做排行榜的序号 1, 2, 3 -->
+                    <span>{{ loop.index }}</span>
+                    <div>
+                        <strong>{{ p.name }}</strong>   <!-- 商品名 -->
+                        <small>销量 {{ p.buy_count }} | 浏览 {{ p.view_count }}</small> <!-- 销量和浏览量 -->
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ol>
+    </aside>
+</div>
+{% endblock %}

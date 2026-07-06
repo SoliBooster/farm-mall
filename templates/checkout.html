@@ -1,0 +1,81 @@
+<!--========================================================================
+    减少用户输入成本：在结算这种关键节点，用户往往没什么耐心。
+代码里用 value="{{ user.username }}" 和 {{ user.address or '' }} 自动填上了用户的历史信息。
+用户只需要扫一眼确认无误，就能直接点“提交订单”，极大地降低了中途放弃购买的概率。
+=========================================================================-->
+
+{% extends 'base.html' %}
+{% block title %}确认订单{% endblock %}
+{% block content %}
+
+<!--页面顶部横幅说明-->
+<div class="page-head">
+    <p class="eyebrow">Checkout</p>
+    <h1>确认订单</h1>
+    <!-- 友情提示：告诉用户这是个未完成版商城，支付功能后续上线，点“提交订单”不会真的扣钱，而是直接生成一个“待处理”的订单 -->
+    <p>请核对商品和收货信息。当前版本不接入在线支付，提交后生成待处理订单。</p>
+</div>
+
+<!--主体左右分栏布局-->
+<!-- 和订单详情页一样，被 CSS 设定为左右两栏：左边商品清单，右边收货信息表单 -->
+<section class="checkout-layout">
+    <!--左侧面板：商品清单与总计-->
+    <div class="panel">
+        <div class="section-title">
+            <h2>商品清单</h2>
+            <!-- 显示买了几种商品 -->
+            <span>{{ items|length }} 类商品</span>
+        </div>
+        
+        <div class="order-items">
+            <!-- 循环遍历购物车传来的商品列表 -->
+            {% for item in items %}
+            <div class="order-item">
+                <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}">
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <!-- 简化展示，只显示分类和数量 -->
+                    <p>{{ item.category_name }} | × {{ item.quantity }}</p>
+                </div>
+                <!-- 显示这件商品的小计金额 -->
+                <span>¥{{ '%.2f'|format(item.subtotal) }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- 最底部的应付总计行 -->
+        <div class="total-line"><span>应付合计</span><strong>¥{{ '%.2f'|format(total) }}</strong></div>
+    </div>
+
+    <!--右侧表单：收货信息填写与回填 -->
+    <!-- 收货信息表单。method="post" 提交给后端生成订单。
+         注意这里没有 enctype="multipart..."，因为只提交文本，没有上传文件 -->
+    <form method="post" class="form-card checkout-form">
+        <h2>收货信息</h2>
+        <!-- 1. 收货人：【表单回填】
+             为了用户体验，后端通常会把用户注册时的名字传过来。
+             value="{{ user.username }}" 让输入框默认填上用户的用户名，省得他再打字 -->
+        <label>收货人
+            <input type="text" name="receiver_name" value="{{ user.username }}" required>
+        </label>
+        
+        <!-- 2. 联系电话：同样回填。如果用户之前没填过手机号，就用 or '' 显示空字符串 -->
+        <label>联系电话
+            <input type="text" name="phone" value="{{ user.phone or '' }}" required>
+        </label>
+
+        <!-- 3. 收货地址：textarea 标签的回填，直接写在标签中间 -->
+        <label>收货地址
+            <textarea name="address" rows="3" required>{{ user.address or '' }}</textarea>
+        </label>
+
+        <!-- 4. 订单备注：这个不需要回填，用 placeholder 给个灰色提示就行 -->
+        <label>订单备注
+            <textarea name="remark" rows="3" placeholder="可填写配送要求、包装要求等"></textarea>
+        </label>
+
+        <!-- 提交按钮：点击后，后端就会接收这些信息，生成一笔新订单，并清空购物车 -->
+        <button class="btn primary big" type="submit">提交订单</button>
+    </form>
+</section>
+{% endblock %}

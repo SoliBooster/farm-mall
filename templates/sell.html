@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% block title %}我要卖货{% endblock %} <!-- 填充网页标题 -->
+{% block content %} <!-- 开始填充主体内容 -->
+
+<!--第一大块：发布商品表单-->
+<section class="form-shell wide-form">
+    <div class="form-intro">
+        <p class="eyebrow">Seller Center</p>
+        <h1>我要卖货</h1>
+        <p>发布商品后可在下方管理价格、库存、上下架状态，并查看近期订单。</p>
+    </div>
+
+    <!-- 【重点 1】：文件上传表单
+         method="post" 修改数据必须用 POST。
+         enctype="multipart/form-data" 是必须的！只要有 <input type="file"> 上传文件，就必须加这个属性，
+         否则后端 Python 收不到图片文件，只能收到文件名。 -->
+    <form method="post" enctype="multipart/form-data" class="form-card">
+
+        <!-- 商品图片。accept="image/*" 限制用户只能选择图片格式的文件 -->
+        <label>商品图片
+            <input type="file" name="image" accept="image/*">
+        </label>
+
+        <!-- 商品名称。required 表示必填项，不填无法提交 -->
+        <label>商品名称
+            <input type="text" name="name" placeholder="例如：洛川红富士苹果" required>
+        </label>
+
+        <!-- 商品种类下拉框。遍历后端传来的 categories 生成选项 -->
+        <label>商品种类
+            <select name="category_id" required>
+                <option value="">请选择分类</option>
+                {% for c in categories %}
+                <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+
+        <div class="two-col">   <!-- 两列布局 -->
+            <label>价格
+                <!-- step="0.01" 允许输入两位小数，min="0" 不能为负数 -->
+                <input type="number" step="0.01" min="0" name="price" placeholder="8.80" required>
+            </label>
+            <label>库存
+                <input type="number" min="1" name="stock" value="100">
+            </label>
+        </div>
+        <label>产地
+            <input type="text" name="origin" placeholder="例如：陕西延安">
+        </label>
+        <label>商品介绍
+            <!-- textarea 是多行文本框，rows="5" 显示 5 行高 -->
+            <textarea name="description" rows="5" placeholder="介绍商品的新鲜度、产地、口感、包装方式等"></textarea>
+        </label>
+        <button class="btn primary big" type="submit">发布商品</button>
+    </form>
+</section>
+
+<!--第二大块：我发布的商品管理表-->
+<section class="panel seller-panel">
+    <div class="section-title"><h2>我发布的商品</h2><span>{{ my_products|length }} 件</span></div>
+    {% if my_products %}
+    <table class="data-table">
+        <thead><tr><th>图片</th><th>商品</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for p in my_products %}
+        <tr>
+            <td><img class="table-img" src="{{ url_for('static', filename=p.image) }}" alt="{{ p.name }}"></td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.category_name }}</td>
+            <td>¥{{ '%.2f'|format(p.price) }}</td>
+            <td>{{ p.stock }}</td>
+            <td>{{ p.buy_count }}</td>
+
+            <!-- 【重点 2】：Jinja2 行内 if-else 语法 (三元运算符)
+                 相当于 Python 的 '上架中' if p.status == 'active' else '已下架'
+                 如果状态是 active，胶囊显示文字"上架中"，否则显示"已下架"。这让代码极其紧凑 -->
+            <td><span class="status-pill {{ p.status }}">{{ '上架中' if p.status == 'active' else '已下架' }}</span></td>
+            
+            <td class="table-actions">
+                <!-- 1. 编辑按钮：跳转到编辑页面 -->
+                <a class="btn soft" href="{{ url_for('edit_product', product_id=p.id) }}">编辑</a>
+                
+                <!-- 2. 上下架切换：POST 表单提交。
+                     按钮文字同样用了行内 if-else：如果是 active 就显示"下架"（点击就下架），反之显示"上架" -->
+                <form method="post" action="{{ url_for('seller_toggle_product', product_id=p.id) }}"><button class="btn ghost" type="submit">{{ '下架' if p.status == 'active' else '上架' }}</button></form>
+                
+                <!-- 3. 删除商品： confirm() 弹窗防手滑 -->
+                <form method="post" action="{{ url_for('seller_delete_product', product_id=p.id) }}" onsubmit="return confirm('确定删除该商品吗？')"><button class="btn danger" type="submit">删除</button></form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty soft-empty">你还没有发布商品。</div>
+    {% endif %}
+</section>
+
+<!--第三大块：近期售出记录-->
+<section class="panel seller-panel">
+    <div class="section-title"><h2>近期售出记录</h2><span>最近 12 条</span></div>
+    {% if seller_orders %}
+    <table class="data-table">
+        <thead><tr><th>订单号</th><th>商品</th><th>数量</th><th>金额</th><th>状态</th><th>收货人</th><th>时间</th></tr></thead>
+        <tbody>
+        {% for o in seller_orders %}
+        <tr>
+            <td>{{ o.order_no }}</td>
+            <td>{{ o.product_name }}</td>
+            <td>{{ o.quantity }}</td>
+            <td>¥{{ '%.2f'|format(o.subtotal) }}</td>
+            <td><span class="status-pill {{ o.status }}">{{ o.status }}</span></td>
+            <td>{{ o.receiver_name }}</td>
+            <td>{{ o.created_at }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty soft-empty">暂无售出记录。</div>
+    {% endif %}
+</section>
+{% endblock %}

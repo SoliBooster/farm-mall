@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}用户管理{% endblock %}
+{% block content %}
+
+<div class="page-head compact-head">
+    <p class="eyebrow">User Management</p>
+    <h1>用户管理</h1>
+    <p>查看普通用户与管理员的基本信息、上传记录和订单记录数量。</p>
+</div>
+
+<!-- 返回后台首页按钮 -->
+<div class="admin-actions"><a class="btn ghost" href="{{ url_for('admin_dashboard') }}">返回后台首页</a></div>
+
+<section class="panel">
+    <table class="data-table">
+        <!-- 表头：一共 7 列 -->
+        <thead><tr><th>用户名</th><th>角色</th><th>性别</th><th>电话</th><th>地址</th><th>上传数</th><th>订单数</th></tr></thead>
+        <tbody>
+        <!-- 循环遍历后端传来的全平台所有用户 -->
+        {% for u in users %}
+        <!-- 原作者把所有列写在一行里，非常紧凑。我们逐个拆解：
+             1. 用户名：u.username
+             2. 角色：老朋友行内 if-else，如果是 admin 显示"管理员"，否则显示"普通用户"
+             3. 性别：u.gender
+             4. 电话：u.phone
+             5. 地址：u.address
+             6. 上传数：u.product_count (这个不是数据库里直接有的字段，是后端统计好传过来的数字)
+             7. 订单数：u.order_count (同样是后端统计好的数字) -->
+        <tr>
+            <td>{{ u.username }}</td>
+            <td>{{ '管理员' if u.role == 'admin' else '普通用户' }}</td>
+            <td>{{ u.gender }}</td>
+            <td>{{ u.phone }}</td>
+            <td>{{ u.address }}</td>
+            <td>{{ u.product_count }}</td>
+            <td>{{ u.order_count }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

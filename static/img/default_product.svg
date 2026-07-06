@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="650" viewBox="0 0 900 650">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#e8f7dd"/>
+      <stop offset="1" stop-color="#fff2c7"/>
+    </linearGradient>
+  </defs>
+  <rect width="900" height="650" fill="url(#g)"/>
+  <circle cx="450" cy="280" r="120" fill="#71b66b" opacity="0.95"/>
+  <path d="M430 165 C430 105 485 78 545 82 C530 143 492 174 430 165Z" fill="#388e3c"/>
+  <path d="M385 370 C420 430 515 430 548 367 C505 407 428 408 385 370Z" fill="#f6d365" opacity="0.85"/>
+  <text x="450" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="56" fill="#31572c" font-weight="700">田禾优选</text>
+</svg>

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}后台管理{% endblock %}
+{% block content %}
+
+<div class="page-head">
+    <p class="eyebrow">Admin Center</p>
+    <h1>后台管理</h1>
+    <p>管理员可查看系统概况，并管理商品、订单与用户信息。</p>
+</div>
+
+<!-- 三个大按钮，相当于后台管理的三个子模块入口 -->
+<div class="admin-actions">
+    <a class="btn primary" href="{{ url_for('admin_products') }}">商品管理</a>
+    <a class="btn ghost" href="{{ url_for('admin_orders') }}">订单管理</a>
+    <a class="btn ghost" href="{{ url_for('admin_users') }}">用户管理</a>
+</div>
+
+<!--核心数据看板：5 个统计指标-->
+<!-- 这是一个网格布局，class 里的 five 是 CSS 里用来设定一行显示 5 个格子的标记 -->
+<div class="stat-grid five">
+    <div><span>用户总数</span><strong>{{ stats.users }}</strong></div>
+    <div><span>商品总数</span><strong>{{ stats.products }}</strong></div>
+    <div><span>订单总数</span><strong>{{ stats.orders }}</strong></div>
+    <div><span>行为日志</span><strong>{{ stats.actions }}</strong></div>
+    
+    <!-- 【重点】：格式化过滤器的新用法。
+         之前商品价格用的是 '%.2f' 保留 2 位小数（如 15.00）。
+         这里用了 '%.0f'，表示保留 0 位小数（即取整数，不显示小数点后的数字）。
+         因为总成交金额通常数字比较大，显示成 ¥150000 比 ¥150000.00 看起来更清爽干净 -->
+    <div><span>成交金额</span><strong>¥{{ '%.0f'|format(stats.sales) }}</strong></div>
+</div>
+
+<!--双栏数据列表布局-->
+<!-- 和订单详情页类似，这里把屏幕分成左右两栏，左边看最新商品，右边看最新订单 -->
+<section class="dashboard-grid">
+    <!--左侧面板：最新商品表-->
+    <div class="panel">
+        <div class="section-title"><h2>最新商品</h2><span>最近上传</span></div>
+        <!-- compact-table 通常表示紧凑型表格，行距更小 -->
+        <table class="data-table compact-table">
+            <thead><tr><th>商品</th><th>分类</th><th>卖家</th><th>价格</th><th>状态</th></tr></thead>
+            <tbody>
+            {% for p in recent_products %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td>{{ p.category_name }}</td>
+                <td>{{ p.seller_name }}</td>
+                <td>¥{{ p.price }}</td>
+                <!-- 老朋友：行内 if-else 显示上下架状态 -->
+                <td>{{ '上架中' if p.status == 'active' else '已下架' }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!--右侧面板：最新订单表-->
+    <div class="panel">
+        <div class="section-title"><h2>最新订单</h2><span>最近提交</span></div>
+        <table class="data-table compact-table">
+            <thead><tr><th>订单号</th><th>用户</th><th>金额</th><th>状态</th></tr></thead>
+            <tbody>
+            {% for o in recent_orders %}
+            <tr>
+                <td>{{ o.order_no }}</td>
+                <td>{{ o.username }}</td>
+                <td>¥{{ o.total_amount }}</td>
+                <td><span class="status-pill {{ o.status }}">{{ o.status }}</span></td>
+            </tr>
+            <!-- 【重点技巧】：表格里的 for-else 配合 colspan！
+                 如果最近一笔订单都没有（recent_orders 为空），就会执行 else 分支。
+                 <td colspan="4"> 表示这个单元格横跨 4 列（因为表头有 4 个 th）。
+                 这样“暂无订单”这四个字就会在整个表格宽度的正中间显示，而不是挤在第一个格子里 -->
+            {% else %}
+            <tr><td colspan="4">暂无订单。</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

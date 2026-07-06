@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}注册{% endblock %}
+{% block content %}
+
+<section class="form-shell auth-shell">
+    <div class="form-intro">
+        <p class="eyebrow">Create Account</p>
+        <h1>用户注册</h1>
+        <!-- 【重点】：在表单上方清清楚楚地写好“规矩”。
+             告诉用户用户名和密码的格式要求，避免用户瞎填一通提交后被后端拒绝，体验变差。 -->
+        <p>用户名支持 1-10 位汉字、大小写字母和数字；密码采用 8-18 位规则，并包含大小写字母和数字。</p>
+    </div>
+
+    <!-- POST 表单，因为没有上传文件，所以不需要 enctype 属性 -->
+    <form method="post" class="form-card small-card">
+        
+        <!-- 1. 用户名输入框
+             maxlength="10"：HTML5 自带的属性，限制最多只能输入 10 个字符，多打字打不进去。
+             required：HTML5 属性，必填项，如果为空点提交按钮会被浏览器拦截 -->
+        <label>用户名
+            <input type="text" name="username" maxlength="10" placeholder="例如：小明01" required>
+        </label>
+        
+        <!-- 2. 密码输入框
+             type="password"：这是重点！这样输入的内容会变成小黑点，防止旁边的人偷窥密码。
+             required：同样必填 -->
+        <label>密码
+            <input type="password" name="password" placeholder="例如：Aa123456" required>
+        </label>
+        
+        <!-- 3. 确认密码输入框
+             这是为了防止用户打字太快把密码输错。两次输入一致才能提交。
+             注意：前端通常无法直接校验两次密码是否一致（除非用 JS），这里的校验主要交给后端 Python 处理 -->
+        <label>确认密码
+            <input type="password" name="confirm" required>
+        </label>
+        
+        <button class="btn primary big" type="submit">注册并登录</button>
+
+        <!-- 友好的提示：如果用户已经有账号了，不用再注册一遍。
+             提供一个跳转链接，直接去 login (登录) 页面 -->
+        <p class="hint">已有账号？<a href="{{ url_for('login') }}">去登录</a></p>
+    </form>
+</section>
+{% endblock %}

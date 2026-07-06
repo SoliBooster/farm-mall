@@ -1,0 +1,38 @@
+<!-- 整个商品卡片其实是一个 <a> 超链接。点击卡片任何地方都会跳转。
+     href 指向商品详情页，把当前商品的 id 传过去 (比如 /product/5) -->
+<a class="product-card" href="{{ url_for('product_detail', product_id=product.id) }}">
+    <!--图片区与分类角标-->
+    <div class="product-img-wrap">
+        <!-- 引入商品图片。注意这里的路径：后端传来的 product.image 应该是类似 "img/apple.jpg" 的字符串，
+             url_for 会自动拼上 /static/ 前缀，最终变成 /static/img/apple.jpg -->
+        <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+        
+        <!-- 这是一个浮在图片左上角（或右上角）的小标签，显示商品分类，比如"水果"、"粮油" -->
+        <span class="badge">{{ product.category_name }}</span>
+    </div>
+
+    <!--商品文本信息区-->
+    <div class="product-info">
+        <!-- 商品名称 -->
+        <h3>{{ product.name }}</h3>
+
+        <!-- 商品产地。这里用了一个小技巧： or 语法。
+             如果后端有填产地，就显示填写的产地；
+             如果后端产地为空，就默认显示 "产地直供" 作为兜底文字，防止页面留白不好看 -->
+        <p class="origin">产地：{{ product.origin or '产地直供' }}</p>
+
+        <!--价格与库存行-->
+        <div class="card-row">
+            <!-- 商品价格。
+             重点语法：'|' 是 Jinja2 的过滤器。
+             '%.2f'|format(product.price) 的意思是：把价格格式化成保留两位小数的字符串。
+             比如：数据库里存的是 15，页面就会显示 15.00；存的是 8.5，就显示 8.50。这样商城看起来更规范 -->
+            <strong>¥{{ '%.2f'|format(product.price) }}</strong>
+
+            <!-- 显示库存数量 -->
+            <span>库存 {{ product.stock }}</span>
+        </div>
+    </div>
+</a>
+
+<!-- 整个商品卡片超链接就写好了喵~ -->

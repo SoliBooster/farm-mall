@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}购物车{% endblock %}   <!-- 填充网页标题 -->
+{% block content %} <!-- 开始填充主体内容 -->
+
+<!--页面顶部横幅与结算栏 -->
+<div class="page-head cart-head">
+    <div>
+        <p class="eyebrow">Shopping Cart</p>
+        <h1>我的购物车</h1>
+        <p>确认商品数量后即可提交订单，支付环节可在后续扩展。</p>
+    </div>
+
+    <!-- 如果购物车里有商品，才显示右侧的合计和结算按钮 -->
+    {% if items %}
+    <div class="cart-summary">
+        <span>合计</span>
+        <!-- 显示总价。同样用了保留两位小数的过滤器 format -->
+        <strong>¥{{ '%.2f'|format(total) }}</strong>
+        <!-- "去结算"按钮，本质是个超链接，跳转到 checkout (结算) 路由 -->
+        <a class="btn primary" href="{{ url_for('checkout') }}">去结算</a>
+    </div>
+    {% endif %}
+</div>
+
+<!--购物车商品列表主体-->
+<!-- 再次判断：如果有商品，就展示列表 -->
+{% if items %}
+<div class="cart-list">
+    <!-- 循环遍历购物车里的每一件商品 (items) -->
+    {% for item in items %}
+    <article class="cart-row">
+        <!-- 1. 左侧：商品图片 -->
+        <!-- 点击图片跳转到 cart_detail (购物车详情) -->
+        <a class="cart-row-img" href="{{ url_for('cart_detail', product_id=item.id) }}">
+            <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}">
+        </a>
+
+        <!-- 2. 中间：商品信息和修改数量表单 -->
+        <div class="cart-row-main">
+            <a href="{{ url_for('cart_detail', product_id=item.id) }}"><h3>{{ item.name }}</h3></a>
+            <p>{{ item.category_name }} | {{ item.origin or '产地直供' }} | 库存 {{ item.stock }}</p>
+            
+            <!--这里很重要喵~，修改数量的表单。method="post" 表示要修改后端数据，必须用 POST 请求喵 -->
+            <form class="quantity-form" method="post" action="{{ url_for('update_cart_quantity', product_id=item.id) }}">
+                <label>数量</label>
+                <!-- input 类型是 number（只能输数字）。
+                     min="1" 最少买1个；max="{{ item.stock }}" 最多不能超过库存；
+                     value="{{ item.quantity }}" 显示当前购物车里的数量 -->
+                <input type="number" name="quantity" min="1" max="{{ item.stock }}" value="{{ item.quantity }}">
+                <!-- 点击"更新"按钮，就会把新的数量提交给后端的 update_cart_quantity 路由 -->
+                <button class="btn soft" type="submit">更新</button>
+            </form>
+        </div>
+
+        <!-- 3. 右侧：小计金额与删除按钮 -->
+        <div class="cart-row-side">
+            <!-- 显示该商品的小计金额 (单价 * 数量) -->
+            <strong>¥{{ '%.2f'|format(item.subtotal) }}</strong>
+            
+            <!-- 又是重点喵~，删除商品的表单。同样必须是 POST 请求，防止被搜索引擎爬虫误触触发删除喵~ -->
+            <form method="post" action="{{ url_for('remove_from_cart', product_id=item.id) }}">
+                <button class="btn danger" type="submit">不想要了</button>
+            </form>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<!--空购物车提示 -->
+{% else %}
+<!-- 如果上面的 items 不存在（也就是购物车空了），显示这个温馨提示 -->
+<div class="empty">购物车还是空的，去首页挑选一些商品吧。</div>
+{% endif %}
+{% endblock %}  <!-- 结束 content 块 -->
+
+
+<!--================================================================
+    在网页里，查看商品（<a href="...">）通常用 GET 请求（网址变化）；
+但只要涉及修改数据（比如这里的改数量 update_cart_quantity 和 删商品 remove_from_cart），
+代码里都老老实实写了 <form method="post">。这是比较规范的 Web 开发习惯，能防止跨站脚本攻击。
+（有些爬虫手脚不干净）
+===================================================================-->

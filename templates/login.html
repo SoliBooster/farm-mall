@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}登录{% endblock %}
+{% block content %}
+<section class="form-shell auth-shell">
+    <div class="form-intro">
+        <p class="eyebrow">Welcome Back</p>
+        <h1>用户登录</h1>
+        <!-- 告诉用户登录的好处：不登录只能看，登录了才能买东西、卖东西 -->
+        <p>登录后可以使用购物车、我的订单、我的关注、我要卖货和用户信息功能。</p>
+    </div>
+    <form method="post" class="form-card small-card">
+        <!-- 1. 用户名输入框。只有 required 必填，不需要像注册页那样限制 maxlength，因为老用户名可能超长 -->
+        <label>用户名
+            <input type="text" name="username" required>
+        </label>
+        
+        <!-- 2. 密码输入框。type="password" 把密码变成小黑点，防偷窥 -->
+        <label>密码
+            <input type="password" name="password" required>
+        </label>
+        
+        <button class="btn primary big" type="submit">登录</button>
+        <!-- 【重点设计】：测试账号提示！
+             这在开发阶段或者给老师/客户演示项目时极其方便。
+             直接把账号密码写在这里，别人打开你的网站不用注册，复制粘贴就能登录体验。
+             一个是管理员账号，一个是普通用户账号，完美覆盖两种权限体验 -->
+        <p class="hint">测试账号：admin / Admin123456；普通用户：小农户 / User123456</p>
+        
+        <!-- 和注册页呼应：如果没有账号，引导去注册页 -->
+        <p class="hint">还没有账号？<a href="{{ url_for('register') }}">去注册</a></p>
+    </form>
+</section>
+{% endblock %}

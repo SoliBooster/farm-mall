@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<section class="detail-card">
+    <div class="detail-image">
+        <img src="{{ url_for('static', filename=product.image) }}" alt="{{ product.name }}">
+    </div>
+    <div class="detail-info">
+        <p class="eyebrow">{{ product.category_name }} · {{ product.origin or '产地直供' }}</p>
+        <h1>{{ product.name }}</h1>
+        <div class="price">¥{{ '%.2f'|format(product.price) }}</div>
+        <p class="desc">{{ product.description or '该商品暂无详细介绍。' }}</p>
+        <div class="meta-grid">
+            <div><span>卖家</span><strong>{{ product.seller_name }}</strong></div>
+            <div><span>库存</span><strong>{{ product.stock }}</strong></div>
+            <div><span>浏览</span><strong>{{ product.view_count }}</strong></div>
+            <div><span>销量</span><strong>{{ product.buy_count }}</strong></div>
+        </div>
+        <div class="detail-actions">
+            <form method="post" action="{{ url_for('add_to_cart', product_id=product.id) }}">
+                <button class="btn primary big" type="submit">购买</button>
+            </form>
+            <form method="post" action="{{ url_for('toggle_favorite', product_id=product.id) }}">
+                <button class="btn soft big" type="submit">{{ '取消关注' if is_fav else '加入关注' }}</button>
+            </form>
+            <a class="btn ghost big" href="{{ url_for('index') }}">退出</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

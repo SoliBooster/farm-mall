@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}商品管理{% endblock %}
+{% block content %}
+
+<div class="page-head compact-head">
+    <p class="eyebrow">Product Management</p>
+    <h1>商品管理</h1>
+    <p>可以对用户上传的商品进行上下架和删除。</p>
+</div>
+<!-- 返回后台首页按钮 -->
+<div class="admin-actions"><a class="btn ghost" href="{{ url_for('admin_dashboard') }}">返回后台首页</a></div>
+
+<!--全局商品表格主体-->
+<section class="panel">
+    <table class="data-table">
+        <!-- 表头：一共 9 列。注意这里比卖家的表格多了一列"卖家"，方便管理员知道是谁卖的 -->
+        <thead><tr><th>图片</th><th>商品</th><th>分类</th><th>卖家</th><th>价格</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+        <!-- 循环遍历后端传来的全平台所有商品 -->
+        {% for p in products %}
+        <tr>
+            <!-- 缩略图 -->
+            <td><img class="table-img" src="{{ url_for('static', filename=p.image) }}" alt="{{ p.name }}"></td>
+            <!-- 商品信息：为了省地方，原作者把多个 td 写在同一行了。分别对应：商品名、分类名、卖家名、价格、库存、销量 -->
+            <td>{{ p.name }}</td><td>{{ p.category_name }}</td><td>{{ p.seller_name }}</td><td>¥{{ p.price }}</td><td>{{ p.stock }}</td><td>{{ p.buy_count }}</td>
+            
+            <!-- 状态胶囊：老朋友行内 if-else，根据 active 显示上架中或已下架 -->
+            <td><span class="status-pill {{ p.status }}">{{ '上架中' if p.status == 'active' else '已下架' }}</span></td>
+            
+            <!--核心操作区：强制上下架与删除-->
+            <td class="table-actions">
+                <!-- 1. 上下架切换表单
+                     路由是 admin_toggle_product（管理员专属路由，区别于卖家的 seller_toggle_product）
+                     按钮文字同样是动态判断的 -->
+                <form method="post" action="{{ url_for('admin_toggle_product', product_id=p.id) }}">
+                    <button class="btn soft" type="submit">{{ '下架' if p.status == 'active' else '上架' }}</button>
+                </form>
+                
+                <!-- 2. 高危操作：强制删除
+                     路由是 admin_delete_product。
+                     老朋友 onsubmit="return confirm(...)" 弹窗防手滑。
+                     管理员删除商品通常意味着违规清除，所以用红色的 danger 按钮 -->
+                <form method="post" action="{{ url_for('admin_delete_product', product_id=p.id) }}" onsubmit="return confirm('确定删除该商品吗？')">
+                    <button class="btn danger" type="submit">删除</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

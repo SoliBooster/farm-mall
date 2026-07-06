@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}购物车详情{% endblock %}   <!-- 填充网页标题 -->
+{% block content %} <!-- 开始填充主体内容 -->
+
+<!-- 详情卡片整体布局-->
+<!-- 这个 section 被 CSS 拆成左右两栏：左边大图，右边详细信息 -->
+<section class="detail-card">
+    <!-- 左边的大图片容器 -->
+    <div class="detail-image">
+        <!-- 加载图片。这里的 item 是后端传过来的当前这件商品对象 -->
+        <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}">
+    </div>
+
+    <!-- 右侧：商品详细信息区 -->
+    <div class="detail-info">
+        <!-- 小标题，显示"购物车商品"加上分类名 -->
+        <p class="eyebrow">购物车商品 · {{ item.category_name }}</p>
+
+        <!-- 商品大标题名称 -->
+        <h1>{{ item.name }}</h1>
+
+        <!-- 商品单价。依旧用 format 过滤器保留两位小数 -->
+        <div class="price">¥{{ '%.2f'|format(item.price) }}</div>
+        
+        <!-- 商品描述介绍。这里又用到了 or 兜底语法：
+             如果商家填了描述，就显示描述；如果没填，就显示"该商品暂无详细介绍。"防止留白 -->
+        <p class="desc">{{ item.description or '该商品暂无详细介绍。' }}</p>
+        
+        <!-- 关键参数网格-->
+        <!-- 这是一个网格布局，用来整齐地排列商品的几个核心数据 -->
+        <div class="meta-grid">
+            <div><span>数量</span><strong>{{ item.quantity }}</strong></div>                <!-- 购物车里的数量 -->
+            <div><span>小计</span><strong>¥{{ '%.2f'|format(item.subtotal) }}</strong></div><!-- 单价 × 数量的总价 -->
+            <div><span>卖家</span><strong>{{ item.seller_name }}</strong></div>             <!-- 卖家名字 -->
+            <div><span>库存</span><strong>{{ item.stock }}</strong></div>                   <!-- 当前剩余库存 -->
+        </div>
+
+        <!-- 底部操作按钮区-->
+        <div class="detail-actions">
+            <!-- 1. 移除按钮：和购物车列表页一样，用 POST 表单提交，跳转到 remove_from_cart 路由删除该商品 -->
+            <form method="post" action="{{ url_for('remove_from_cart', product_id=item.id) }}">
+                <button class="btn danger big" type="submit">不想要了</button>
+            </form>
+
+            <!-- 2. 去结算按钮：普通超链接，跳转到结算页面 -->
+            <a class="btn primary big" href="{{ url_for('checkout') }}">去结算</a>
+            
+            <!-- 3. 退出/返回按钮：普通超链接，跳转回 cart (购物车列表页) -->
+            <a class="btn ghost big" href="{{ url_for('cart') }}">退出</a>
+        </div>
+    </div>  <!-- 结束 detail-info -->
+</section>  <!-- 结束 detail-card -->
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}我的关注{% endblock %} <!-- 填充网页标题 -->
+{% block content %} <!-- 开始填充主体内容 -->
+
+<!--页面顶部横幅说明-->
+<div class="page-head">
+    <p class="eyebrow">Favorites</p>
+    <h1>我的关注</h1>
+    <!-- 简单的提示语，告诉用户这个页面的用途 -->
+    <p>这里保存你感兴趣的商品，方便后续继续查看与购买。</p>
+</div>
+
+<!-- 判断：如果后端传来了关注商品的数据 -->
+{% if products %}
+<div class="product-grid">
+    <!-- 循环遍历后端传来的 products (关注的商品列表) -->
+    {% for product in products %}
+        <!--这里展示的商品样式和首页一模一样，所以直接 include 引入 _product_card.html 即可-->
+        {% include '_product_card.html' %}
+    {% endfor %}
+</div>
+{% else %}
+<!-- 如果一件商品都没关注过，显示空状态提示 -->
+<div class="empty">你还没有关注任何商品。</div>
+{% endif %}
+{% endblock %}

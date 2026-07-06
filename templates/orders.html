@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}我的订单{% endblock %}
+{% block content %}
+<div class="page-head">
+    <p class="eyebrow">Orders</p>
+    <h1>我的订单</h1>
+    <p>订单提交后可查看处理状态，待处理订单支持取消，已发货订单支持确认收货。</p>
+</div>
+{% if orders %}
+<section class="panel">
+    <table class="data-table">
+        <thead><tr><th>订单号</th><th>商品数</th><th>金额</th><th>状态</th><th>收货人</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>{{ o.order_no }}</td>
+            <td>{{ o.item_count }}</td>
+            <td>¥{{ '%.2f'|format(o.total_amount) }}</td>
+            <td><span class="status-pill {{ o.status }}">{{ o.status }}</span></td>
+            <td>{{ o.receiver_name }}</td>
+            <td>{{ o.created_at }}</td>
+            <td><a class="btn soft" href="{{ url_for('order_detail', order_id=o.id) }}">查看详情</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% else %}
+<div class="empty">暂无订单，去首页挑选一些商品吧。</div>
+{% endif %}
+{% endblock %} 

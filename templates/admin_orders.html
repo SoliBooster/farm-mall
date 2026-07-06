@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}订单管理{% endblock %}
+{% block content %}
+<div class="page-head compact-head">
+    <p class="eyebrow">Order Management</p>
+    <h1>订单管理</h1>
+    <p>管理员可以查看所有订单，并根据业务进度调整订单状态。</p>
+</div>
+
+<!-- 只有一个返回按钮，跳回后台首页 (admin_dashboard) -->
+<div class="admin-actions"><a class="btn ghost" href="{{ url_for('admin_dashboard') }}">返回后台首页</a></div>
+
+<!--全局订单表格主体-->
+<section class="panel">
+    <table class="data-table">
+        <!-- 表头：注意这里一共有 8 列 -->
+        <thead><tr><th>订单号</th><th>用户</th><th>商品数</th><th>金额</th><th>收货人</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+        <tbody>
+            <!-- 循环遍历后端传来的所有用户的订单 (orders) -->
+        {% for o in orders %}
+        <tr>
+            <!-- 1. 订单号：包裹了一个超链接，点击可以跳到该订单的详情页 -->
+            <td><a href="{{ url_for('order_detail', order_id=o.id) }}">{{ o.order_no }}</a></td>
+            <!-- 2. 用户：显示是哪个买家下的单 -->
+            <td>{{ o.username }}</td>
+            <!-- 3. 商品数：这笔单子里有几件东西 -->
+            <td>{{ o.item_count }}</td>
+            <!-- 4. 金额：老朋友 format 保留两位小数 -->
+            <td>¥{{ '%.2f'|format(o.total_amount) }}</td>
+            <!-- 5. 收货人 -->
+            <td>{{ o.receiver_name }}</td>
+            <!-- 6. 状态：老朋友动态 class 胶囊样式 -->
+            <td><span class="status-pill {{ o.status }}">{{ o.status }}</span></td>
+            <!-- 7. 创建时间 -->
+            <td>{{ o.created_at }}</td>
+            
+            <!--核心亮点：内嵌状态修改表单-->
+            <!-- 8. 操作列：这里没有跳转页面，而是直接把表单塞进了格子里 -->
+            <td>
+                <form class="status-form" method="post" action="{{ url_for('admin_update_order_status', order_id=o.id) }}">
+                    <select name="status">
+                        <!-- 【重点技巧】：把 4 种状态写死在模板里循环。
+                             管理员可以直接在下拉框里切换状态 -->
+                        {% for s in ['待处理','已发货','已完成','已取消'] %}
+                        <!-- 【表单回填】：如果订单当前的状态等于遍历到的状态，就加 selected 默认选中。
+                             这样管理员一进来，下拉框显示的就是该订单目前真实的状态 -->
+                        <option value="{{ s }}" {% if o.status == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- 点“保存”，就会以 POST 请求把选中的新状态发给后端，后端随即修改数据库 -->
+                    <button class="btn soft" type="submit">保存</button>
+                </form>
+            </td>
+        </tr>
+
+        <!-- for 循环的 else 分支。
+             如果平台一笔订单都没有，执行这里。
+             注意 colspan="8"：因为上面表头有 8 列，
+             所以这里横跨 8 列，让提示文字居中显示 -->
+        {% else %}
+        <tr><td colspan="8">暂无订单。</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

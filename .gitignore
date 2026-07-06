@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# User Uploads
+static/uploads/
+
+# Operating System
+.DS_Store
+Thumbs.db
+
+# Windows ADS
+*:Zone.Identifier

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}用户信息{% endblock %}
+{% block content %}
+<div class="profile-layout">
+    <section class="profile-card">
+        <p class="eyebrow">User Profile</p>
+        <h1>{{ user.username }}</h1>
+        <p class="role-pill">{{ '管理员' if user.role == 'admin' else '普通用户' }}</p>
+        <form method="post" class="form-card inline-form">
+            <label>性别
+                <select name="gender">
+                    {% for g in ['保密','男','女'] %}
+                    <option value="{{ g }}" {% if user.gender == g %}selected{% endif %}>{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label>电话
+                <input type="text" name="phone" value="{{ user.phone or '' }}" placeholder="请输入联系电话">
+            </label>
+            <label>地址
+                <input type="text" name="address" value="{{ user.address or '' }}" placeholder="请输入收货地址">
+            </label>
+            <button class="btn primary" type="submit">保存修改</button>
+        </form>
+    </section>
+
+    <section class="panel">
+        <div class="section-title"><h2>商品上传记录</h2><span>{{ uploads|length }} 条</span></div>
+        <div class="mini-list">
+            {% for p in uploads %}
+            <a href="{{ url_for('edit_product', product_id=p.id) }}"><strong>{{ p.name }}</strong><span>{{ p.category_name }} ｜ ¥{{ p.price }} ｜ {{ '上架中' if p.status == 'active' else '已下架' }}</span></a>
+            {% else %}<p class="muted">暂无上传记录。</p>{% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-title"><h2>购买记录</h2><span>{{ purchases|length }} 条</span></div>
+        <div class="mini-list">
+            {% for p in purchases %}
+            <a href="{{ url_for('order_detail', order_id=p.order_id) }}"><strong>{{ p.name or '商品已删除' }}</strong><span>{{ p.created_at }} ｜ ¥{{ p.price or '0.00' }}</span></a>
+            {% else %}<p class="muted">暂无购买记录。</p>{% endfor %}
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="section-title"><h2>个人搜索历史</h2><span>{{ searches|length }} 条</span></div>
+        <div class="tag-list">
+            {% for s in searches %}<a href="{{ url_for('index', keyword=s.keyword) }}">{{ s.keyword }}</a>{% else %}<p class="muted">暂无搜索记录。</p>{% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %} 

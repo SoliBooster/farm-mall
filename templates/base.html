@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <!-- 告诉浏览器适配手机端，宽度等于设备宽度，缩放比例为1 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- 网页标题。这里用了 Jinja2 语法：预留了一个叫 title 的坑，子页面可以填自己的标题；
+         如果子页面不填，就默认显示变量 {{ site_name }}  -->
+    <title>{% block title %}{{ site_name }}{% endblock %}</title>
+    <!-- 引入外部 CSS 样式表。url_for 是 Flask 特有函数，用来动态找到 static 文件夹下的 css 文件 -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<!--网页顶部导航栏 -->
+<header class="site-header">
+    <div class="topbar">
+        <!-- 网站左上角的 Logo。点击会跳转到首页 (url_for('index') 对应 Python 里的 index 视图函数) -->
+        <a class="brand" href="{{ url_for('index') }}">
+            <span class="brand-mark">禾</span>
+            <span>{{ site_name }}</span>    <!-- 显示网站名称 -->
+        </a>
+
+        <!-- 中间的导航菜单 -->
+        <nav class="nav">
+            <a href="{{ url_for('index') }}">商城首页</a>
+            <!-- 购物车链接。后面加了个判断：如果存在 cart_count (购物车商品数量)，就显示数量徽标 <em> -->
+            <a href="{{ url_for('cart') }}">购物车{% if cart_count %}<em>{{ cart_count }}</em>{% endif %}</a>
+            <a href="{{ url_for('orders') }}">我的订单</a>
+            <a href="{{ url_for('favorites') }}">我的关注</a>
+            <a href="{{ url_for('sell') }}">我要卖货</a>
+            <a href="{{ url_for('profile') }}">用户信息</a>
+
+            <!-- 权限判断：如果当前用户存在，并且是管理员 (role == 'admin')，才显示"后台管理"入口 -->
+            {% if current_user and current_user.role == 'admin' %}
+                <a class="admin-link" href="{{ url_for('admin_dashboard') }}">后台管理</a>
+            {% endif %}
+        </nav>
+
+        <!-- 右上角的账号登录/退出区域 -->
+        <div class="account">
+            {% if current_user %}   <!-- 如果用户已登录 -->
+                <span class="hello">{{ current_user.username }}</span>          <!-- 显示用户名 -->
+                <a class="btn ghost" href="{{ url_for('logout') }}">退出</a>    <!-- 退出按钮 -->
+            {% else %}      <!-- 如果未登录 -->
+                <span class="not-login">未登录</span>
+                <a class="btn ghost" href="{{ url_for('login') }}">登录</a>     <!-- 登录按钮 -->
+                <a class="btn primary" href="{{ url_for('register') }}">注册</a><!-- 注册按钮 -->
+            {% endif %}
+        </div>
+    </div>
+</header>
+
+<!--消息提示弹窗-->
+<!-- 这是 Flask 特有的功能：闪现消息。比如你登录成功、或者加入购物车成功后，页面顶部弹出的提示条 -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}   <!-- 如果有提示消息 -->
+<div class="flash-wrap">
+    <!-- 遍历所有消息。category 是消息类型(比如 success/error，用于控制颜色)，message 是具体文字 -->
+    {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<!--核心内容区域-->
+<main class="main">
+    <!-- 最重要的一行喵，这里预留了一个叫content的坑。
+         其他页面（比如首页、购物车页）会继承这个模板，
+         然后把自己的商品列表、表格等内容填到这个坑里。 -->
+    {% block content %}{% endblock %}
+</main>
+
+<!--网页底部-->
+<footer class="footer">
+    <!-- 底部的版权或宣传语，同样使用了变量 site_name -->
+    <p>{{ site_name }} | 新鲜好物 · 产地直达 · 安心选购</p>
+</footer>
+</body>
+</html>
